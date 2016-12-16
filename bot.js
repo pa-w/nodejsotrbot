@@ -30,9 +30,10 @@ stanza.Message.on ("message", function (attrs, body) {
 	} else {
 		log.info (body);
 		var p = nlp.parse (body);
-		console.log (p);
-		for (var x in p) { 
-			console.log (p [x].key)
-		}
+		client.send (stanza.Message.send (attrs.to, attrs.from, "This are the commands I understood: " + p.map (function (x) { return x.key; }).join (", ")));
+		var verbs = p.map ((x) => { return x.verbs.map ((v) => { return v.text; }).join (" ") }),
+			people = p.map ((x) => { return x.people.map ((p) => { return p.text; }).join (" ") }),
+			nouns = p.map ((x) => { return x.nouns.map ((n) => { return n.text; }).join (" ") });
+		client.send (stanza.Message.send (attrs.to, attrs.from, "Verbs: " + verbs + "\nNouns: " + nouns + "\nPeople: " + people));
 	}
 });

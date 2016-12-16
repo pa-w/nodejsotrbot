@@ -91,6 +91,7 @@ module.exports.parse = function (body) {
 			}
 		}
 		var key_noun = nouns.length > 0 ? nouns [nouns.length - 1].text : "";
+		if (verbs.length == 0) key_noun = nouns.map (function (x) { return x.text; }).join (" ");
 		var key_verb = verbs.length > 0 ? nlp.verb (verbs [verbs.length - 1].text).conjugate ().infinitive : "";
 		terms.push ({"key": key_verb + " " + key_noun, "question": isQuestion, "time": responseTime, "verbs": verbs, "people": people, "dates": dates, "nouns": nouns});
 	}
