@@ -15,7 +15,6 @@ module.exports.parse = function (msg) {
 	}
 }
 module.exports.send = function (from, to, message) {
-	log.info ("sending... !");
 	var st = new Client.Stanza ("message", {to: to, from: from, type: 'chat'});
 	st.c ('body').t (message);
 	return st;
