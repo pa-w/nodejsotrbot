@@ -1,0 +1,18 @@
+{
+"sentences": {
+	"en": { 
+		"not_permitted": "I don't know that type of lawyer",
+		"attorney_type": "What type of lawyer do you need?",
+		"will_lookup": "Will now find one good {attorney_type} attorney for you, wait a second." 
+	}
+},
+"default_locale": "en",
+"actions": { 
+	{"attorney_type": "ask attorney_type; goto attorney_check;"},
+	{"attorney_check": "if !attorney_type then goto attorney_type else goto permitted_types"},
+	{"permitted_types": "if attorney_type in permitted_types then goto lookup else not_permitted_type"},
+	{"not_permitted_type": "say not_permitted; goto attorney_type"},
+	{"lookup": "say will_lookup; fetch"} 
+},
+"default_action": [ "attorney_check" ]
+}
