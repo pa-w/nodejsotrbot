@@ -63,7 +63,7 @@ module.exports.parse = function (body) {
 		log.info (lines [line].text () + " ///\n Terms: " + analysis.terms.length);
 		var isQuestion = false, capturingSubject = false, subject = "I";
 		var responseTime = null;
-		var verbs = [], people = [], dates = [], nouns = [];
+		var verbs = [], people = [], dates = [], nouns = [], questions = [];
 		for (var x in analysis.terms) { 
 			/*
 			console.log (analysis.terms [x]);
@@ -72,7 +72,10 @@ module.exports.parse = function (body) {
 				console.log ("\t" + y + " " +analysis.terms [x].pos [y]);
 			}
 			*/
-			if (!isQuestion && analysis.terms [x].pos.Question) isQuestion = true;
+			if (!isQuestion && analysis.terms [x].pos.Question) { 
+				isQuestion = true;
+				questions.push (analysis.terms [x]);
+			}
 			if (!responseTime && analysis.terms [x].pos.Verb && !analysis.terms [x].pos.Copula) {
 				responseTime = analysis.terms [x].tag;
 			}
@@ -90,10 +93,16 @@ module.exports.parse = function (body) {
 				dates.push (analysis.terms [x]);
 			}
 		}
-		var key_noun = nouns.length > 0 ? nouns [nouns.length - 1].text : "";
-		if (verbs.length == 0) key_noun = nouns.map (function (x) { return x.text; }).join (" ");
-		var key_verb = verbs.length > 0 ? nlp.verb (verbs [verbs.length - 1].text).conjugate ().infinitive : "";
-		terms.push ({"key": key_verb + " " + key_noun, "question": isQuestion, "time": responseTime, "verbs": verbs, "people": people, "dates": dates, "nouns": nouns});
+		var key_noun = nouns.length > 0 ? nouns [nouns.length - 1].normal : "";
+		if (verbs.length == 0) key_noun = nouns.map (function (x) { return x.normal; }).join (" ");
+		var key_verb = verbs.length > 0 ? nlp.verb (verbs [verbs.length - 1].normal).conjugate ().infinitive : "";
+		var key = key_verb + "_" + key_noun;
+		if (key == "_" && questions.length > 0) { 
+			key = questions [0].normal + "_" + (people.length > 0 ? people [0].normal : analysis.terms [analysis.terms.length - 1].normal);  
+		} else if (key == "_") {
+			key = analysis.terms [0].normal + "_" + analysis.terms [analysis.terms.length - 1].normal;
+		}
+		terms.push ({"key": key, "question": isQuestion, "time": responseTime, "verbs": verbs, "people": people, "dates": dates, "nouns": nouns});
 	}
 
 	return terms;
