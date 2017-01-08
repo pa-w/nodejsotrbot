@@ -6,6 +6,7 @@ var client = new Client ({
 	"jid": process.env.JID,
 	"password": process.env.JID_PWD
 });
+var user = require ("./modules/users");
 var nlp = require ("./modules/nlp");
 var commandParser = require ('./modules/commands');
 
@@ -30,26 +31,26 @@ stanza.Message.on ("message", function (attrs, body) {
 	if (lines [0].trim ().substring (0, 4) == "?OTR") { 
 		client.send (stanza.Message.send (attrs.to, attrs.from, "I will support OTR soon!"));
 	} else {
-		log.info ("not otr");
-		var words = body.split (" ");
-		log.info (words.length);
-		if (words.length >= 2) { 
-			var cmd = words.slice (0, 2).join ("_");
-			var file = "commands/" + cmd + ".js";
-			if (!fs.existsSync (file)) {
-				var p = nlp.parse (body),
-					cmd = p.map (function (x) { return x.key.replace (" ", "_"); }).join ("_"),
-					file = "commands/" + cmd + ".js";
-				if (fs.existsSync (file)) {
-					file = "commands/not_found.js";
+		var profile = user.load (attrs.to, attrs.from, function () { 
+			var words = body.split (" ");
+			if (words.length >= 2) { 
+				var cmd = words.slice (0, 2).join ("_").toLowerCase ();
+				var file = "../commands/" + cmd + ".js";
+				if (!commandParser.parse (file)) {
+					var p = nlp.parse (body),
+						cmd = p.map (function (x) { return x.key.replace (" ", "_"); }).join ("_"),
+						file = "../commands/" + cmd + ".js";
+						if (!commandParser.parse (file)) { 
+							file = "./commands/not_found.js";
+						}
+				}
+				try {
+					commandParser.parse (file);
+				} catch (e) {
+					log.info ("Failed to parse: (" + file + "):" + e);
 				}
 			}
-			try {
-				commandParser.parse (file);
-			} catch (e) {
-				log.info ("Failed to parse: (" + file + "):" + e);
-			}
-		}
+		});
 		/*
 		client.send (stanza.Message.send (attrs.to, attrs.from, "This are the commands I understood: " + p.map (function (x) { return x.key; }).join (", ")));
 		var verbs = p.map ((x) => { return x.verbs.map ((v) => { return v.text; }).join (" ") }),
