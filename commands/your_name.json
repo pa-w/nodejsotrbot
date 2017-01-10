@@ -1,0 +1,10 @@
+{
+	"sentences": {
+		"my_name": {"en": "My name is $bot_name"}
+	},
+	"default_locale": "en",
+	"actions": {
+		"say_name": "say my_name"
+	},
+	"default_action": "say_name"
+}

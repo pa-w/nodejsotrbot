@@ -1,0 +1,11 @@
+{
+	"sentences": { 
+		"not_found": {"en": "I don't know"}
+	},
+	"default_locale": "en",
+	"actions": {
+		"say_not_found": "say not_found"
+	},
+	"default_action": "say_not_found"
+
+}

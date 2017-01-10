@@ -1,0 +1,10 @@
+{
+	"sentences": { 
+		"hi": {"en": "Hello!"} 
+	},
+	"default_locale": "en",
+	"actions": {
+		"say_hi": "say hi"
+	},
+	"default_action": "say_hi"
+}
