@@ -12,52 +12,7 @@ var EventEmitter = require('events').EventEmitter;
 module.exports = new EventEmitter ();
 
 module.exports.parse = function (body) {
-	var cb = function (line) {  
-		/*
-		return function (b) {
-			var qWords = ["who", "where", "what", "when", "which", "why"];
-			var personalPronouns = ["I", "you", "he", "she", "it", "they", "we"];
-			if (b) { 
-				var pos = [], ks = {}, verbs = [], words = line.split (" "), idx = {};
-				for (var i in words) { 
-					ks [words [i]] = line.indexOf (words [i]);
-					idx [words [i]] = i;
-				}
-				b.verbs.sort (function (a, b) { if (ks [a] > ks [b]) { return 1; } else { return -1; } return 0; });
-				verbs = b.verbs.filter (function (a) { return (b.adverbs.indexOf (a) == -1); })
-				if (verbs.length > 0) { 
-					var previous = idx [verbs [0]] - 1, next = parseInt (idx [verbs [0]]) + 1, useVerb = 0, isQuestion = false, actor =words [next];
-					log.info (next + ": " + words [next] + " " + words.length)
-					while (useVerb < verbs.length && previous >= 0 && qWords.indexOf (words [previous]) !== -1) { 
-						useVerb ++;
-						if (personalPronouns.indexOf (next) !== -1) {
-							if (words [next].toLower () == "i") { 
-								actor = "you";
-							} else if (words [next].toLower () == "you") {
-								actor = "I";
-							}
-						}
-
-						previous = idx [verbs [useVerb]] - 1, next = idx [verbs [useVerb]] + 1;
-						isQuestion = true;
-					}
-					log.info ("definitive verb: " + verbs [useVerb] + " actor: " + actor);
-					
-					//client.send (stanza.Message.send (attrs.to, attrs.from, "Ok. I will " + verbs [0])); 
-				} else {
-					log.info ("This would be nice to google");
-				}
-			} else {
-				log.info ("no b");
-			}
-			for (var x in b) { 
-				log.info (x + ": " + b [x]);
-			}
-		}
-		*/
-	}
-	var lines = nlp.text (body).sentences;
-	var terms = [];
+	var lines = nlp.text (body).sentences, terms = [];
 	for (var line in lines) {
 		var analysis = nlp.sentence (lines [line].text ())
 		log.info (lines [line].text () + " ///\n Terms: " + analysis.terms.length);

@@ -31,21 +31,24 @@ stanza.Message.on ("message", function (attrs, body) {
 	if (lines [0].trim ().substring (0, 4) == "?OTR") { 
 		client.send (stanza.Message.send (attrs.to, attrs.from, "I will support OTR soon!"));
 	} else {
-		var profile = user.load (attrs.to, attrs.from, function () { 
+		var profile = user.load (attrs.to, attrs.from, function (user) { 
 			var words = body.split (" ");
 			if (words.length >= 2) { 
 				var cmd = words.slice (0, 2).join ("_").toLowerCase ();
-				var file = "../commands/" + cmd + ".js";
-				if (!commandParser.parse (file)) {
-					var p = nlp.parse (body),
-						cmd = p.map (function (x) { return x.key.replace (" ", "_"); }).join ("_"),
-						file = "../commands/" + cmd + ".js";
-						if (!commandParser.parse (file)) { 
-							file = "./commands/not_found.js";
+				var file = "../commands/" + cmd + ".json";
+				if (!commandParser.parse (file, words, user, client)) {
+					log.info (file + " doesnt exist.");
+					var p = nlp.parse (body)
+						//cmd = p.map (function (x) { return x.key.replace (" ", "_"); }).join ("_"),
+					for (var i in p) {
+						file = "../commands/" + p [i].key + ".json";
+						if (!commandParser.parse (file, p [i], user, client)) { 
+							log.info (file + " (nlp) does not exist either");
+							commandParser.parse ("../commands/not_found.json", {},  user, client);
 						}
+					}
 				}
 				try {
-					commandParser.parse (file);
 				} catch (e) {
 					log.info ("Failed to parse: (" + file + "):" + e);
 				}

@@ -16,9 +16,7 @@ module.exports.load = function (service, id, cb) {
 				});
 				return;
 			}
-			
 			cb (body);
-
 		});
 	});
 	
