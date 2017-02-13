@@ -10,8 +10,10 @@ var client = new Client ({
 var user = require ("./modules/users");
 var nlp = require ("./modules/nlp");
 var commandParser = require ('./modules/commands');
-var OTR = require('./otr/build/otr.js');
-var DSA = require('./otr/lib/dsa.js');
+//var OTR = require('./otr/build/otr.js');
+//var DSA = require('./otr/lib/dsa.js');
+var OTR = require ("otr/lib/otr");
+var DSA = require ("otr/lib/dsa");
 
 var pKey = null;
 user.privateKey (process.env.JID, 
