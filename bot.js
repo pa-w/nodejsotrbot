@@ -1,6 +1,7 @@
 var stanza = require ("./modules/stanza/stanza")
 var fs = require ('fs');
 var log = require ("./modules/log");
+var strip_tags = require ("./modules/strip_tags");
 var Client = require('node-xmpp-client');
 var client = new Client ({
 	"jid": process.env.JID,
@@ -38,6 +39,8 @@ stanza.Message.on ("composing", function (attrs) {
 });
 stanza.Message.on ("message", function (attrs, body) { 
 	var messageReceived = function (attrs, body, otr) {
+		body = strip_tags (body);
+		log.info (body);
 		var profile = user.load (attrs.to, attrs.from, function (user) { 
 			var words = body.split (" ");
 			if (words.length >= 2) { 
@@ -64,6 +67,7 @@ stanza.Message.on ("message", function (attrs, body) {
 	}
 	try { 
 		var otr = buddies [attrs.from];
+		// new buddy...! 
 		if (!buddies [attrs.from]) { 
 			otr = new OTR ({fragment_size: 140, send_interval: 200, priv: pKey});
 			buddies [attrs.from] = otr;
@@ -75,22 +79,17 @@ stanza.Message.on ("message", function (attrs, body) {
 				if (!enc && lines [0].trim ().substring (0, 4) == "?OTR") { 
 					log.info ("XXX: " + body)
 				} else if (!enc) { 
-					log.info ("sending query msg");
-					//client.send (stanza.Message.send (attrs.to, attrs.from, "Wait... Let's encrypt!"));
+					//Received a plain text message, let's start OTR!
 					otr.sendMsg ("Wait... Let's encrypt!");
 					otr.sendQueryMsg ();
 				} else {
-					log.info ("received cyphered message: " + msg)
-					//here i will call the receivedMessage callback to parse the actual message.
+					// At this point, we have a cyphered channel and msg was already decrypted.
+ 					// Let's call back!
 					try { 
 						messageReceived (attrs, msg, otr);
 					} catch (e) {
 						log.info ("Error in callback: " + e);
 					}
-
-
-					//otr.sendMsg (msg);
-					//client.send (stanza.Message.send (attrs.to, attrs.from, ));
 				}
 			});
 			otr.on ('io', function (msg, meta) { 
