@@ -13,9 +13,17 @@ var commandParser = require ('./modules/commands');
 var OTR = require('./otr/build/otr.js');
 var DSA = require('./otr/lib/dsa.js');
 
-log.info ("Computing private key");
-var pKey = new DSA ();
-log.info ("done");
+var pKey = null;
+user.privateKey (process.env.JID, 
+	function (k) { 
+		pKey = DSA.parsePrivate(k); 
+	}, 
+	function () { 
+		var d = new DSA (), k = d.packPrivate ();
+		return k;
+	}
+);
+
 var buddies = {};
 
 client.connection.on ("data", function (data) { 
@@ -40,7 +48,6 @@ stanza.Message.on ("composing", function (attrs) {
 stanza.Message.on ("message", function (attrs, body) { 
 	var messageReceived = function (attrs, body, otr) {
 		body = strip_tags (body);
-		log.info (body);
 		var profile = user.load (attrs.to, attrs.from, function (user) { 
 			var words = body.split (" ");
 			if (words.length >= 2) { 
@@ -69,7 +76,7 @@ stanza.Message.on ("message", function (attrs, body) {
 		var otr = buddies [attrs.from];
 		// new buddy...! 
 		if (!buddies [attrs.from]) { 
-			otr = new OTR ({fragment_size: 140, send_interval: 200, priv: pKey});
+			otr = new OTR ({fragment_size: 140, send_interval: 200, priv: pKey, debug: true});
 			buddies [attrs.from] = otr;
 			otr.on ('error', function (error, severity) { 
 				log.info ("ERROR (" + severity + "): " + error);
@@ -114,16 +121,4 @@ stanza.Message.on ("message", function (attrs, body) {
 	} catch (e) { 
 		log.info ("COULDNT PARSE MESSAGE: " + e);
 	}
-	/*
-
-	}
-
-		/*
-		client.send (stanza.Message.send (attrs.to, attrs.from, "This are the commands I understood: " + p.map (function (x) { return x.key; }).join (", ")));
-		var verbs = p.map ((x) => { return x.verbs.map ((v) => { return v.text; }).join (" ") }),
-			people = p.map ((x) => { return x.people.map ((p) => { return p.text; }).join (" ") }),
-			nouns = p.map ((x) => { return x.nouns.map ((n) => { return n.text; }).join (" ") });
-
-		client.send (stanza.Message.send (attrs.to, attrs.from, "Verbs: " + verbs + "\nNouns: " + nouns + "\nPeople: " + people));
-		*/
 });

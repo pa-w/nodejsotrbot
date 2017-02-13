@@ -4,6 +4,27 @@ var log = require ('./log');
 var nano = require ('nano') ('http://localhost:5984');
 
 module.exports = new EventEmitter ();
+module.exports.privateKey = function (id, cb, new_k) {
+	module.exports.checkDb ('keys', function () { 
+		var keys = nano.use ('keys');
+		keys.get (id, function (err, k) {
+			if (err) {
+				//new key!
+				// calls new_k callback.
+				obj = {_id: id, key: new_k ()};
+				keys.insert (obj, function (e, b) {
+					log.info ("INSERT ");
+					log.info (b);
+					if (!e) {
+						module.exports.privateKey (id, cb, new_k);
+					}
+				});
+				return;
+			}
+			cb (k.key);
+		});
+	});
+}
 module.exports.load = function (service, id, cb) { 
 	module.exports.checkDb ('profiles', function () { 
 		var profiles = nano.use ('profiles');
@@ -22,17 +43,15 @@ module.exports.load = function (service, id, cb) {
 	
 }
 module.exports.checkDb = function (db, cb, t) { 
-	nano.db.get ('profiles', function (err, body) { 
+	nano.db.get (db, function (err, body) { 
 		if (err)  { 
 			log.info (err);
 			if (!t) {
-				log.info ("will create db");
 				nano.db.create (db);
 				module.exports.checkDb (db, cb, true);
 			}
 			return; 
 		}
-
 		cb ();
 
 	});
