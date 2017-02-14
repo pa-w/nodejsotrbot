@@ -5,15 +5,24 @@ var EventEmitter = require('events').EventEmitter;
 module.exports = new EventEmitter ();
 module.commands = {};
 module.commands.say = function (what, conf, user, client, otr) { 
+	log.info ("will say" + conf.sentences [what][user.locale ? user.locale : conf.default_locale]);
 	otr.sendMsg (conf.sentences [what][user.locale ? user.locale : conf.default_locale]);
-	//client.send (stanza.Message.send (user.service, user.id, conf.sentences [what][user.locale ? user.locale : conf.default_locale]));
+}
+module.commands.goto = function (what, conf, user, client, otr) {
+	log.info ("Go to: " + what);
+	if (conf.actions && conf.actions [what]) {
+		module.exports.exec (conf.actions [what], conf, user, client, otr);
+	}
 }
 module.exports.exec = function (action, conf, user, client, otr) { 
 	var cmds = action.split(";");
 	for (var cmd in cmds) { 
-		var w = cmds [cmd].split (" ");
+		log.info ("cmd: [" + cmds [cmd].trim () + "]");
+		var w = cmds [cmd].trim ().split (" ");
 		if (module.commands [w [0]]) {
 			module.commands [w [0]] (w.slice (1).join (" "), conf, user, client, otr);
+		} else {
+			log.info ("unknown command: [" + w [0] + "]");
 		}
 	}
 }

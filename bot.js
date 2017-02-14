@@ -10,8 +10,6 @@ var client = new Client ({
 var user = require ("./modules/users");
 var nlp = require ("./modules/nlp");
 var commandParser = require ('./modules/commands');
-//var OTR = require('./otr/build/otr.js');
-//var DSA = require('./otr/lib/dsa.js');
 var OTR = require ("otr/lib/otr");
 var DSA = require ("otr/lib/dsa");
 
@@ -106,7 +104,7 @@ stanza.Message.on ("message", function (attrs, body) {
 					log.info ("META: "+  meta);
 				}
 				client.send (stanza.Message.send (attrs.to, attrs.from, msg));
-				log.info ('send: ' + attrs.to + " " + attrs.from + " " + msg);
+				//log.info ('send: ' + attrs.to + " " + attrs.from + " " + msg);
 			});
 			otr.on ('status', function (state) { 
 				log.info ('change of status: ' + state);
