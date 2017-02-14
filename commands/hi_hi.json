@@ -1,10 +1,13 @@
 {
 	"sentences": { 
-		"hi": {"en": "Hello!"} 
+		"hi": {"en": "Hello!"}, 
+		"good_to_see_you": {"en": "It is good to see you!" },
+		"init": {"en": "Nice to meet you!"}
 	},
 	"default_locale": "en",
 	"actions": {
-		"say_hi": "say hi"
+		"say_hi": "say hi; if $user.name eq null then goto init else say good_to_see_you",
+		"init": "say init; ask name;"
 	},
 	"default_action": "say_hi"
 }
