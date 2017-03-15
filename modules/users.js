@@ -25,6 +25,27 @@ module.exports.privateKey = function (id, cb, new_k) {
 		});
 	});
 }
+module.exports.update = function (data, cb) { 
+	var profiles = nano.use ('profiles');
+	try {
+		profiles.head (data._id, function (err, _, headers) {
+			if (!err) { 
+				profiles.insert (data, function (err, body) { 
+					if (!err) {
+						for (var k in body) { 
+							data [k] = body [k];
+						}
+						cb (data);
+					} else {
+						log.info ("update failed!!!" + err);
+					}
+				});
+			}
+		});
+	} catch (e) { 
+		log.info ("update fail: " + e);
+	}
+}
 module.exports.load = function (service, id, cb) { 
 	module.exports.checkDb ('profiles', function () { 
 		var profiles = nano.use ('profiles');
@@ -53,6 +74,5 @@ module.exports.checkDb = function (db, cb, t) {
 			return; 
 		}
 		cb ();
-
 	});
 }

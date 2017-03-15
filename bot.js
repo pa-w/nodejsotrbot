@@ -48,26 +48,35 @@ stanza.Message.on ("composing", function (attrs) {
 stanza.Message.on ("message", function (attrs, body) { 
 	var messageReceived = function (attrs, body, otr) {
 		body = strip_tags (body);
-		var profile = user.load (attrs.to, attrs.from, function (user) { 
-			var words = body.split (" ");
-			if (words.length >= 2) { 
-				var cmd = words.slice (0, 2).join ("_").toLowerCase ();
-				var file = "../commands/" + cmd + ".json";
-				if (!commandParser.parse (file, words, user, client, otr)) {
-					log.info (file + " doesnt exist.");
-					var p = nlp.parse (body)
-						//cmd = p.map (function (x) { return x.key.replace (" ", "_"); }).join ("_"),
-					for (var i in p) {
-						file = "../commands/" + p [i].key + ".json";
-						if (!commandParser.parse (file, p [i], user, client, otr)) { 
-							log.info (file + " (nlp) does not exist either");
-							commandParser.parse ("../commands/not_found.json", {},  user, client, otr);
+		user.load (attrs.to, attrs.from, function (userData) { 
+			if (userData.redirectCommand && userData.redirectCommand !== true) { 
+				var file = userData.redirectCommand; 
+				log.info ("Redirecting to " + userData.redirectCommand);
+				if (!commandParser.parse (file, body, userData, client, otr)) {
+					userData.redirectCommand = false;
+					
+					user.update (userData, function () {
+						otr.sendMsg ("Can you say that again?");
+					});
+				};
+
+			} else {
+				
+				var words = body.split (" ");
+				if (words.length >= 2) { 
+					var cmd = words.slice (0, 2).join ("_").toLowerCase ();
+					var file = "../commands/" + cmd + ".js";
+					if (!commandParser.parse (file, words, userData, client, otr)) {
+						// nlp.parse splits the input into sentences and analyses each one.
+						var p = nlp.parse (body)
+						for (var i in p) {
+							file = "../commands/" + p [i].key + ".js";
+							if (!commandParser.parse (file, p [i], userData, client, otr)) { 
+								log.info (file + " (nlp) does not exist either");
+								commandParser.parse ("../commands/not_found.js", {},  userData, client, otr);
+							}
 						}
 					}
-				}
-				try {
-				} catch (e) {
-					log.info ("Failed to parse: (" + file + "):" + e);
 				}
 			}
 		});
