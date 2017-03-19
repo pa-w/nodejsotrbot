@@ -2,6 +2,9 @@ var stanza = require ("./modules/stanza/stanza")
 var fs = require ('fs');
 var log = require ("./modules/log");
 var strip_tags = require ("./modules/strip_tags");
+
+var rivebot = require ("./modules/rivebot");
+
 var Client = require('node-xmpp-client');
 var client = new Client ({
 	"jid": process.env.JID,
@@ -48,38 +51,47 @@ stanza.Message.on ("composing", function (attrs) {
 stanza.Message.on ("message", function (attrs, body) { 
 	var messageReceived = function (attrs, body, otr) {
 		body = strip_tags (body);
-		user.load (attrs.to, attrs.from, function (userData) { 
-			if (userData.redirectCommand && userData.redirectCommand !== true) { 
-				var file = userData.redirectCommand; 
-				log.info ("Redirecting to " + userData.redirectCommand);
-				if (!commandParser.parse (file, body, userData, client, otr)) {
-					userData.redirectCommand = false;
-					
-					user.update (userData, function () {
-						otr.sendMsg ("Can you say that again?");
-					});
-				};
+		try {
+			var rep = rivebot.getReply (attrs.from, body);
+			log.info ("error: " + rep + " " + (rep.indexOf ("ERR:")));
+			if (rep && rep.indexOf ("ERR:") !== -1) throw "no rivebot reply";
 
-			} else {
-				
-				var words = body.split (" ");
-				if (words.length >= 2) { 
-					var cmd = words.slice (0, 2).join ("_").toLowerCase ();
-					var file = "../commands/" + cmd + ".js";
-					if (!commandParser.parse (file, words, userData, client, otr)) {
-						// nlp.parse splits the input into sentences and analyses each one.
-						var p = nlp.parse (body)
-						for (var i in p) {
-							file = "../commands/" + p [i].key + ".js";
-							if (!commandParser.parse (file, p [i], userData, client, otr)) { 
-								log.info (file + " (nlp) does not exist either");
-								commandParser.parse ("../commands/not_found.js", {},  userData, client, otr);
+			otr.sendMsg (rep);	
+		} catch (erx) {
+			log.info ("falling back to npl: " + erx); 
+			user.load (attrs.to, attrs.from, function (userData) { 
+				if (userData.redirectCommand && userData.redirectCommand !== true) { 
+					var file = userData.redirectCommand; 
+					log.info ("Redirecting to " + userData.redirectCommand);
+					if (!commandParser.parse (file, body, userData, client, otr)) {
+						userData.redirectCommand = false;
+						
+						user.update (userData, function () {
+							otr.sendMsg ("Can you say that again?");
+						});
+					};
+
+				} else {
+						
+					var words = body.split (" ");
+					if (words.length >= 2) { 
+						var cmd = words.slice (0, 2).join ("_").toLowerCase ();
+						var file = "../commands/" + cmd + ".js";
+						if (!commandParser.parse (file, words, userData, client, otr)) {
+							// nlp.parse splits the input into sentences and analyses each one.
+							var p = nlp.parse (body)
+							for (var i in p) {
+								file = "../commands/" + p [i].key + ".js";
+								if (!commandParser.parse (file, p [i], userData, client, otr)) { 
+									log.info (file + " (nlp) does not exist either");
+									commandParser.parse ("../commands/not_found.js", {},  userData, client, otr);
+								}
 							}
 						}
 					}
 				}
-			}
-		});
+			});
+		}
 	}
 	try { 
 		var otr = buddies [attrs.from];
