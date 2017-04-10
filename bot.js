@@ -15,6 +15,7 @@ var nlp = require ("./modules/nlp");
 var commandParser = require ('./modules/commands');
 var OTR = require ("otr/lib/otr");
 var DSA = require ("otr/lib/dsa");
+var otr;
 
 var pKey = null;
 user.privateKey (process.env.JID, 
@@ -40,9 +41,11 @@ client.on ("error", function (e) {
 	log.info ("error: " + e);
 });
 client.on ("stanza", function (sta) { 
+	console.log ("received stanza");
 	stanza.parse (sta);
 });
 stanza.Presence.on ("subscribe", function (attrs) { 
+	log.info ("got subscribe");
 	client.send (stanza.Presence.acceptSubscription (attrs.from));
 })
 stanza.Message.on ("composing", function (attrs) { 
@@ -55,10 +58,8 @@ stanza.Message.on ("message", function (attrs, body) {
 			var rep = rivebot.getReply (attrs.from, body);
 			log.info ("error: " + rep + " " + (rep.indexOf ("ERR:")));
 			if (rep && rep.indexOf ("ERR:") !== -1) throw "no rivebot reply";
-
 			otr.sendMsg (rep);	
 		} catch (erx) {
-			log.info ("falling back to npl: " + erx); 
 			user.load (attrs.to, attrs.from, function (userData) { 
 				if (userData.redirectCommand && userData.redirectCommand !== true) { 
 					var file = userData.redirectCommand; 

@@ -1,4 +1,5 @@
 var Client = require('node-xmpp-client');
+var log = require ("../log");
 var EventEmitter = require('events').EventEmitter;
 module.exports = new EventEmitter ();
 module.exports.parse = function (stanza) { 
@@ -8,5 +9,5 @@ module.exports.parse = function (stanza) {
 	}
 }
 module.exports.acceptSubscription = function (to) { 
-	return new Client.Stanza ("presence", {"to": to});
+	return new Client.Stanza ("presence", {"to": to, "type": "subscribed"});
 }
