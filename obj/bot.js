@@ -23,14 +23,37 @@ Bot.prototype.ready = function () {
 	this.connect ();
 }
 Bot.prototype.connect = function () { 
-	var p = require ("./protocols/" + this.protocol ());
-	this._protocol = new p (this);
-
-	var layer = this.layer ();
+	try {
+		var p = require ("./protocols/" + this.protocol ());
+		this._protocol = new p (this);
+	} catch (e) { this.emit ("error", e); }
 
 	this._buddyList = new BuddyList (this.username ());
 	var me = this;	
-	this._buddyList.on ("buddy_add", function (buddy) { me.emit ("buddy_add", buddy); buddy.setLayer (layer); });
+	var layer = this.layer ();
+	var messageCb = function (buddy) { 
+		return function (from, msg, attrs) { 
+			me.emit ("received_message", me.username (), from, msg);
+		}
+	}
+	var presenceCb = function (buddy) {
+		return function (type, attrs) {
+			console.log ("Presence: (" + buddy.username () + ") " + type); 
+		}
+	}
+	var sendCb = function (buddy) { 
+		return function (message) {
+			console.log ("Will send message: " + message);
+			me._protocol.sendMessage (me.username (), buddy.username (), message);
+		}
+	}
+	this._buddyList.on ("buddy_add", function (buddy) { 
+		me.emit ("buddy_add", buddy); 
+		buddy.setLayer.apply (buddy, layer); 
+		buddy.on ("presence", presenceCb (buddy));
+		buddy.on ("send_message", sendCb (buddy));
+		buddy.on ("received_message", messageCb (buddy));
+	});
 }
 Bot.prototype.disconnect = function () {
 	this._protocol.disconnect ();
@@ -45,9 +68,6 @@ Bot.prototype.buddy = function (who) {
 	}
 
 	return buddy;
-}
-Bot.prototype.receivedMessage = function (from, msg, attrs) {
-	
 }
 
 module.exports = Bot;
