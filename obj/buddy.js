@@ -16,6 +16,9 @@ Buddy.prototype.rawMessage = function (message, attrs) {
 		this.emit ("received_message", this.username (), message);
 	}
 }
+Buddy.prototype.sendMessage = function (message) {
+	this.emit ("send_message", message);
+}
 Buddy.prototype.presence = function (type, attrs) {
 	this.emit ("presence", [type, attrs]);
 }

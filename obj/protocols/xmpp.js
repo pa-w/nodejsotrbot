@@ -26,7 +26,7 @@ function Protocol_XMPP (Bot) {
 			} else if (stanza.getChild ('composing')) {
 				Bot.buddy (stanza.attrs.from).isTyping (true);
 			} else if (stanza.getChild ('paused')) {
-				Boy.buddy (stanza.attrs.from).isTyping (false);
+				Bot.buddy (stanza.attrs.from).isTyping (false);
 			}
 		}
 	});
